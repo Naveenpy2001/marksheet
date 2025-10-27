@@ -37,7 +37,7 @@ const AuthPage = () => {
       if (formData.password.length < 6) {
         setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
         return false;
-      }
+      } 
       if (!formData.firstName || !formData.lastName) {
         setMessage({ type: 'error', text: 'First name and last name are required' });
         return false;
@@ -168,6 +168,8 @@ const AuthPage = () => {
                   onChange={handleChange}
                   placeholder="Enter your first name"
                   required={!isLogin}
+                  autoCorrect='true'
+                  
                 />
               </div>
               <div className="st-form-group">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ResultsPage.css';
+import Header from './Header';
 
 const ResultsPage = () => {
   const [enrollmentNumber, setEnrollmentNumber] = useState('');
@@ -10,9 +11,57 @@ const ResultsPage = () => {
   const [resultData, setResultData] = useState(null);
   const [studentInfo, setStudentInfo] = useState(null);
 
+   const [formData, setFormData] = useState({
+    field1: '',
+    field2: '',
+    field3: '',
+    field4: '',
+    field5: '',
+    field6: '',
+    field7: '',
+    field8: '',
+    field9: '',
+    field10: ''
+  });
+ 
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await axios.post('/submit-data/', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.data.success) {
+        alert('Data submitted successfully!');
+        setFormData({
+          field1: '',
+          field2: '',
+          field3: '',
+          field4: '',
+          field5: '',
+          field6: '',
+          field7: '',
+          field8: '',
+          field9: '',
+          field10: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting data:', error);
+      alert('Error submitting data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const menuItems = [
     { id: 'results', label: 'RESULTS' },
-    { id: 'admissions', label: 'ADMISSIONS' },
+    { id: 'admissions', label: 'RESULTS 2' },
     { id: 'programmes', label: 'PROGRAMMES' },
     { id: 'study-centres', label: 'STUDY CENTRES' },
     { id: 'student-services', label: 'STUDENT SERVICES' },
@@ -23,37 +72,7 @@ const ResultsPage = () => {
     { id: 'contact', label: 'CONTACT US' }
   ];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!enrollmentNumber.trim()) return;
-
-    setLoading(true);
-    try {
-      // API call to fetch result - replace with actual endpoint
-      const response = await axios.post('/api/results', {
-        enrollmentNumber: enrollmentNumber.trim(),
-        year: 2025,
-        semester: "August"
-      });
-      
-      if (response.data.success) {
-        setResultData(response.data.result);
-        setStudentInfo(response.data.studentInfo);
-        setActiveSection('results');
-      } else {
-        alert('No results found for the provided enrollment number.');
-      }
-    } catch (error) {
-      console.error('Error fetching result:', error);
-      // Mock data for demonstration
-      const mockResult = generateMockResult(enrollmentNumber);
-      setResultData(mockResult.courses);
-      setStudentInfo(mockResult.studentInfo);
-      setActiveSection('results');
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const generateMockResult = (enrollmentNo) => {
     return {
@@ -168,8 +187,7 @@ const ResultsPage = () => {
               </>
             ) : (
               <div className="st-welcome-message">
-                <h3>Welcome to University Results Portal 2025</h3>
-                <p>Enter your enrollment number to check your results for August 2025 examinations.</p>
+               
               </div>
             )}
           </div>
@@ -178,16 +196,29 @@ const ResultsPage = () => {
       case 'admissions':
         return (
           <div className="st-section-content">
-            <h3>Admissions 2025-26</h3>
-            <div className="st-info-card">
-              <h4>Important Dates</h4>
-              <ul>
-                <li>Application Start Date: January 15, 2025</li>
-                <li>Last Date for Application: March 31, 2025</li>
-                <li>Entrance Exam: April 20, 2025</li>
-                <li>Counselling: May 15-30, 2025</li>
-              </ul>
-            </div>
+             <h1 className="st-results-title">August 2025 - RESULTS</h1>
+            
+            <form className="st-results-form" onSubmit={handleSubmit}>
+              <div className="st-form-group">
+                <label htmlFor="enrollmentNumber" className="st-form-label">
+                  Enter Enrolment / Register Number:
+                </label>
+                <div className="st-input-container">
+                  <input
+                    type="text"
+                    id="enrollmentNumber"
+                    className="st-form-input"
+                    value={enrollmentNumber}
+                    onChange={(e) => setEnrollmentNumber(e.target.value)}
+                    placeholder=""
+                    required
+                  />
+                  <button type="submit" className="st-submit-button" disabled={loading}>
+                    {loading ? 'Loading...' : 'Get Results'}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         );
 
@@ -220,6 +251,10 @@ const ResultsPage = () => {
   };
 
   return (
+    <>
+    <div>
+      <Header />
+    </div>
     <div className="st-container">
       {/* Mobile Menu Button */}
       <button className="st-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -228,10 +263,7 @@ const ResultsPage = () => {
 
       {/* Fixed Sidebar Navigation */}
       <div className={`st-sidebar ${isMenuOpen ? 'st-sidebar-open' : ''}`}>
-        <div className="st-sidebar-header">
-          <h2>UNIVERSITY PORTAL</h2>
-          {/* <div className="st-academic-year">2024-25</div> */}
-        </div>
+      
         <nav className="st-nav">
           <ul className="st-nav-list">
             {menuItems.map((item) => (
@@ -256,33 +288,157 @@ const ResultsPage = () => {
       {/* Scrollable Main Content */}
       <main className="st-main-content">
         {/* Results Input Section - Only show when results is active */}
-        {activeSection === 'results' && (
-          <div className="st-results-input-section">
-            <h1 className="st-results-title">August 2025 - RESULTS</h1>
-            
-            <form className="st-results-form" onSubmit={handleSubmit}>
-              <div className="st-form-group">
-                <label htmlFor="enrollmentNumber" className="st-form-label">
-                  Enter Enrolment / Register Number:
-                </label>
-                <div className="st-input-container">
-                  <input
-                    type="text"
-                    id="enrollmentNumber"
-                    className="st-form-input"
-                    value={enrollmentNumber}
-                    onChange={(e) => setEnrollmentNumber(e.target.value)}
-                    placeholder=""
-                    required
-                  />
-                  <button type="submit" className="st-submit-button" disabled={loading}>
-                    {loading ? 'Loading...' : 'Get Results'}
-                  </button>
-                </div>
-              </div>
-            </form>
+{activeSection === 'results' && (
+  <div className="sheet-results-input-section">
+    {/* <h1 className="sheet-results-title">Student Data Entry</h1> */}
+    
+    <form className="sheet-results-form" onSubmit={handleSubmit}>
+      <div className="sheet-form-row">
+        <div className="sheet-form-column">
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field1" className="sheet-form-label">Title 1:</label>
           </div>
-        )}
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field2" className="sheet-form-label">Title 2:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field3" className="sheet-form-label">Title 3:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field4" className="sheet-form-label">Title 4:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field5" className="sheet-form-label">Title 5:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field6" className="sheet-form-label">Title 6:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field7" className="sheet-form-label">Title 7:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field8" className="sheet-form-label">Title 8:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field9" className="sheet-form-label">Title 9:</label>
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <label htmlFor="field10" className="sheet-form-label">Title 10:</label>
+          </div>
+        </div>
+
+        <div className="sheet-form-column">
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field1"
+              className="sheet-form-input"
+              value={formData.field1}
+              onChange={(e) => setFormData({...formData, field1: e.target.value})}
+              placeholder="Enter value for Title 1"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field2"
+              className="sheet-form-input"
+              value={formData.field2}
+              onChange={(e) => setFormData({...formData, field2: e.target.value})}
+              placeholder="Enter value for Title 2"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field3"
+              className="sheet-form-input"
+              value={formData.field3}
+              onChange={(e) => setFormData({...formData, field3: e.target.value})}
+              placeholder="Enter value for Title 3"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field4"
+              className="sheet-form-input"
+              value={formData.field4}
+              onChange={(e) => setFormData({...formData, field4: e.target.value})}
+              placeholder="Enter value for Title 4"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field5"
+              className="sheet-form-input"
+              value={formData.field5}
+              onChange={(e) => setFormData({...formData, field5: e.target.value})}
+              placeholder="Enter value for Title 5"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field6"
+              className="sheet-form-input"
+              value={formData.field6}
+              onChange={(e) => setFormData({...formData, field6: e.target.value})}
+              placeholder="Enter value for Title 6"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field7"
+              className="sheet-form-input"
+              value={formData.field7}
+              onChange={(e) => setFormData({...formData, field7: e.target.value})}
+              placeholder="Enter value for Title 7"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field8"
+              className="sheet-form-input"
+              value={formData.field8}
+              onChange={(e) => setFormData({...formData, field8: e.target.value})}
+              placeholder="Enter value for Title 8"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field9"
+              className="sheet-form-input"
+              value={formData.field9}
+              onChange={(e) => setFormData({...formData, field9: e.target.value})}
+              placeholder="Enter value for Title 9"
+            />
+          </div>
+          <div className="sheet-form-group sheet-grid-cell">
+            <input
+              type="text"
+              id="field10"
+              className="sheet-form-input"
+              value={formData.field10}
+              onChange={(e) => setFormData({...formData, field10: e.target.value})}
+              placeholder="Enter value for Title 10"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="sheet-submit-container">
+        <button type="submit" className='button'  disabled={loading}>
+          {loading ? 'Submitting...' : 'Submit'}
+        </button>
+      </div>
+    </form>
+  </div>
+)}
 
         {/* Dynamic Content Area */}
         <div className="st-content-area">
@@ -292,11 +448,14 @@ const ResultsPage = () => {
               Fetching results...
             </div>
           ) : (
-            renderContent()
+            <>
+           { renderContent()}
+            </>
           )}
         </div>
       </main>
     </div>
+    </>
   );
 };
 
